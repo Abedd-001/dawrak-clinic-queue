@@ -1,4 +1,4 @@
-# دورك (Dawrak) — Real-time Clinic Queue System
+# (Dawrak) — Real-time Clinic Queue System
 
 A serverless, mobile-first queue management system for medical clinics, built with **vanilla JavaScript + Firebase** (Realtime Database, Auth, Hosting). Patients book a turn by scanning a QR code, follow their position live, and the waiting-room screen announces the current number — no app install, no backend server.
 
@@ -8,12 +8,12 @@ Two products from one codebase:
 |---|---|
 | [`dawrak/`](dawrak) | Single-doctor clinic |
 | [`mdorak/`](mdorak) | Multi-doctor clinic (doctor picker, per-doctor queues, one daily code for the whole clinic) |
-| [`toolkit/`](toolkit) | `new-clinic.js` — CLI that scaffolds a new clinic and injects its Firebase config |
+| [`toolkit/`](toolkit) | `new-clinic.js` — CLI that make a new clinic and injects its Firebase config |
 | [`tests/`](tests) | Security-rules generator, rules simulator (149 cases), and Playwright end-to-end tests |
 
 ## Three screens
-- **Patient page** — book by QR + daily code, live position/ETA, cancel own ticket. Arabic / RTL, mobile first.
-- **Staff dashboard** — email/password login (never persisted), call next, mark done/no-show, add walk-in patients, WhatsApp button with "sent ✓" marker, per-clinic settings.
+- **Patient page** — book by QR + daily code, live position/ETA, cancel own ticket. Arabic / RTL, mobile-first.
+- **Staff dashboard** — email/password login (never persisted), call next, mark done/no-show, add walk-in patients, WhatsApp button, per-clinic settings.
 - **Waiting-room display** — no login; shows the current number, QR to book, today's code, and plays a chime when the number changes (with autoplay-policy fallback).
 
 ## Engineering highlights
