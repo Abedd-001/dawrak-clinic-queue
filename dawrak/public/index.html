@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="only light">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
+<title>احجز دورك</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F4F7F6;--surface:#FFFFFF;--surface-2:#F0F4F3;--ink:#10282A;--muted:#58706F;--line:#D6E2DF;
+  --brand:#0B6B5E;--on-brand:#FFFFFF;--brand-ink:#0B6B5E;--brand-soft:#D9F0EA;
+  --wait-bg:#FFEFCF;--wait-fg:#7A4700;--wait-dot:#E08A00;
+  --done-bg:#E2EBE9;--done-fg:#4D6563;
+  --bad-bg:#FBE3E0;--bad-fg:#96302B;--off:#8CA3A0;
+  --shadow:0 1px 3px rgba(16,40,42,.07),0 8px 24px rgba(16,40,42,.09);
+  --f-d:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-b:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  color-scheme:only light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:15px;line-height:1.65;margin:0;forced-color-adjust:none}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:var(--f-d);text-wrap:balance;line-height:1.3}
+button{font:inherit;cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--brand-ink);outline-offset:2px}
+.muted{color:var(--muted)} .small{font-size:13px} .ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+/* layout */
+.wrap{max-width:480px;margin-inline:auto;min-height:100svh;display:flex;flex-direction:column;
+  padding:20px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+/* card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
+/* clinic header */
+.c-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.mono{flex:none;width:48px;height:48px;border-radius:14px;background:var(--brand);color:var(--on-brand);
+  display:grid;place-items:center;font-family:var(--f-d);font-weight:700;font-size:22px}
+.c-head h1{font-size:17px;flex:1;min-width:0}
+.c-head p{font-size:13px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.chip i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip.open{background:var(--brand-soft);color:var(--brand-ink)}
+.chip.closed{background:var(--bad-bg);color:var(--bad-fg)}
+@media(prefers-reduced-motion:no-preference){.chip.open i{animation:pulse 1.8s ease-in-out infinite}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+/* board */
+.board{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:14px}
+.board>div{padding:12px 10px;display:flex;flex-direction:column;gap:2px;min-width:0;background:var(--surface)}
+.board>div+div{border-inline-start:1px solid var(--line)}
+.board span{font-size:11.5px;color:var(--muted);line-height:1.3}
+.board b{font-family:var(--f-d);font-weight:700;font-size:30px;line-height:1.2;font-variant-numeric:tabular-nums}
+.board small{font-size:11.5px;color:var(--muted)}
+/* form */
+form{display:flex;flex-direction:column;gap:14px}
+.sheet-head{margin-bottom:16px}
+.sheet-head h2{font-size:20px}
+.sheet-head p{color:var(--muted);font-size:13.5px;margin-top:4px}
+label,legend{display:block;font-size:13px;font-weight:600;margin-bottom:6px;padding:0}
+.opt{font-weight:400;color:var(--muted)}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+input[type=text],input[type=tel],input[type=number],input:not([type]),textarea{
+  width:100%;min-height:48px;padding:10px 14px;border-radius:12px;
+  border:1.5px solid var(--line);background:var(--surface-2);color:var(--ink);font:inherit}
+textarea{resize:vertical;min-height:72px}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.8}
+input:focus,textarea:focus{outline:none;border-color:var(--brand-ink);box-shadow:0 0 0 3px var(--brand-soft)}
+input[dir=ltr]{text-align:right}
+.two{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.seg label{position:relative;margin:0;font-weight:500}
+.seg input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.seg span{display:grid;place-items:center;min-height:46px;padding:6px;text-align:center;font-size:13.5px;
+  border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.seg input:checked+span{background:var(--brand-soft);border-color:var(--brand-ink);color:var(--brand-ink);font-weight:600}
+.err{color:var(--bad-fg);font-size:13px;margin-top:4px}
+.err:empty{display:none}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;
+  border-radius:12px;border:1.5px solid transparent;font-family:var(--f-d);font-weight:600;font-size:14.5px;line-height:1.2}
+.btn-primary{background:var(--brand);color:var(--on-brand)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-bad{background:transparent;border-color:var(--line);color:var(--bad-fg)}
+.btn-block{width:100%;min-height:52px;font-size:16px}
+.btn-sm{min-height:36px;padding:0 12px;font-size:13px;border-radius:10px}
+.pill-no{background:rgba(255,255,255,.25);border-radius:8px;padding:1px 10px;font-size:14px}
+.fine{font-size:12px;color:var(--muted);text-align:center}
+/* ticket */
+.ticket{background:var(--brand);color:var(--on-brand);border-radius:20px;margin-bottom:14px}
+.tk-top{padding:18px 20px 6px}
+.tk-meta{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;opacity:.85}
+.tk-main{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:4px}
+.tk-label{display:block;font-size:12.5px;opacity:.85}
+.tk-no{font-family:var(--f-d);font-weight:700;font-size:clamp(72px,22vw,104px);line-height:1;font-variant-numeric:tabular-nums}
+.tk-now{text-align:end;padding-bottom:6px}
+.tk-now b{font-family:var(--f-d);font-weight:700;font-size:36px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tk-name{font-size:13.5px;margin-top:6px;opacity:.9}
+.perf{position:relative;height:26px}
+.perf i{position:absolute;inset-inline:20px;top:12px;border-top:2px dashed rgba(255,255,255,.3)}
+.perf::before,.perf::after{content:"";position:absolute;top:1px;width:24px;height:24px;border-radius:50%;background:var(--bg)}
+.perf::before{left:-12px}.perf::after{right:-12px}
+.stubs{display:grid;grid-template-columns:.8fr 1.3fr 1.1fr;padding:2px 8px 18px}
+.stubs>div{padding:0 12px;display:flex;flex-direction:column;min-width:0}
+.stubs>div+div{border-inline-start:1px solid rgba(255,255,255,.25)}
+.stubs span{font-size:12px;opacity:.85}
+.stubs b{font-family:var(--f-d);font-weight:700;font-size:26px;line-height:1.3;font-variant-numeric:tabular-nums}
+.stubs b.t{font-size:20px;line-height:1.6}
+.tk-off{padding:6px 20px 18px;font-weight:600}
+.ticket.off{background:var(--done-bg);color:var(--done-fg)}
+/* note */
+.note{display:flex;flex-direction:column;gap:2px;border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.note b{font-family:var(--f-d)}
+.note.calm{background:var(--brand-soft);color:var(--brand-ink)}
+.note.near{background:var(--wait-bg);color:var(--wait-fg)}
+.note.go{background:var(--brand);color:var(--on-brand)}
+.note.done{background:var(--done-bg);color:var(--done-fg)}
+.note.bad{background:var(--bad-bg);color:var(--bad-fg)}
+/* strip */
+.place h3{font-size:14px;margin-bottom:6px}
+.strip{display:flex;gap:8px;overflow-x:auto;padding-block:4px 8px;margin-bottom:14px}
+.ch{flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:44px}
+.ch span{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
+  border:1.5px solid var(--line);background:var(--surface);font-family:var(--f-d);font-weight:600;font-variant-numeric:tabular-nums}
+.ch small{font-size:11px;color:var(--muted);min-height:14px}
+.ch.in span{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.ch.me span{background:var(--wait-bg);border-color:var(--wait-dot);color:var(--wait-fg)}
+/* callbox */
+.callbox{display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid var(--line);margin-top:4px}
+.callno{font-family:var(--f-d);font-weight:700;font-size:26px;color:var(--ink);text-decoration:none;font-variant-numeric:tabular-nums}
+/* actions */
+.row-acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;margin-bottom:14px}
+/* live line */
+.live{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--brand-ink);flex:none}
+@media(prefers-reduced-motion:no-preference){.live i{animation:pulse 1.8s ease-in-out infinite}}
+/* splash */
+.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;text-align:center;padding:32px 0}
+.splash .logo{font-family:var(--f-d);font-weight:700;font-size:40px;color:var(--brand-ink)}
+/* skeleton shimmer */
+.sk{background:linear-gradient(90deg,var(--line) 25%,var(--surface-2) 50%,var(--line) 75%);
+  background-size:200% 100%;border-radius:8px;animation:shimmer 1.4s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* footer */
+.site-footer{max-width:480px;margin-inline:auto;text-align:center;padding:4px 16px 20px;
+  color:var(--muted);font-size:11.5px;line-height:1.7}
+.site-footer a{color:var(--brand-ink);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="splash" id="splash">
+    <div class="logo"><img src="/logo.svg" alt="" style="height:44px;width:44px;vertical-align:middle;margin-inline-end:10px;border-radius:22%">دورك</div>
+    <p class="muted small">جاري التحميل…</p>
+  </div>
+</div>
+<footer class="site-footer">
+  شكرًا لاستخدامك <strong>دورك</strong> — نتمنى لك تجربة سلسة وموفقة!<br>
+  لشراء التطبيق أو الحصول على نسخة مخصصة لعيادتك، تواصل مع المطور:<br>
+  <a href="mailto:mbody2233@gmail.com">mbody2233@gmail.com</a><br>
+  <span style="font-size:10.5px;opacity:.7">© 2026 Abdulrahman Abed. All rights reserved.</span>
+</footer>
+
+<!-- Firebase v10 compat (no bundler needed) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-database-compat.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════
+   CONFIG — استبدل القيم دي بـ config من Firebase
+   ══════════════════════════════════════════════ */
+var FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "000000000000",
+  appId:             "1:000000000000:web:0000000000000000000000"
+};
+/* ══════════════════════════════════════════════ */
+
+firebase.initializeApp(FIREBASE_CONFIG);
+var db = firebase.database();
+
+var MIN = 60000;
+var ROOT = document.getElementById('root');
+
+var pad  = function(n){ return n < 10 ? '0'+n : ''+n };
+var esc  = function(s){ return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}) };
+var toLatin = function(s){ return s.replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}) };
+var tf = new Intl.DateTimeFormat('ar-EG-u-nu-latn',{hour:'numeric',minute:'2-digit'});
+var df = new Intl.DateTimeFormat('ar-EG-u-nu-latn',{weekday:'short',day:'numeric',month:'short'});
+var fmtTime = function(ms){ return ms ? tf.format(new Date(ms)) : '' };
+var fmtPhone = function(p){ return (p||'').length===11?p.slice(0,4)+' '+p.slice(4,7)+' '+p.slice(7):(p||'') };
+
+/* ── state ── */
+var state = {
+  clinic: { name:'العيادة', specialty:'', address:'', hours:'', phone:'', avg:15, open:true },
+  tickets: {},   /* keyed by Firebase push-id */
+  myKey: null,   /* localStorage */
+  cancelAsk: false,
+  dailyCode: null,
+  codeOk: false,
+  codeErr: '',
+  codeOn: false,
+  codeKnown: false,   /* وصلنا رد Firebase عن الكود؟ */
+  myName: '',
+  booking: false
+};
+
+/* ── helpers ── */
+var ticketArr = function(){
+  return Object.keys(state.tickets)
+    .map(function(k){ return Object.assign({},state.tickets[k],{_key:k}) })
+    .sort(function(a,b){ return a.no - b.no });
+};
+var inside  = function(){ return ticketArr().find(function(t){ return t.status==='in' }) };
+var waiting = function(){ return ticketArr().filter(function(t){ return t.status==='waiting' }) };
+var remaining = function(){
+  var c=inside(); if(!c) return 0;
+  var el=(Date.now()-c.startedAt)/MIN;
+  return Math.max(2, state.clinic.avg - el);
+};
+var waitFor = function(t){
+  var ahead = waiting().filter(function(x){ return x.no < t.no }).length;
+  return ahead * state.clinic.avg + remaining();
+};
+var waitParts = function(m){
+  if(m<1)  return {big:'دلوقتي', small:''};
+  if(m<5)  return {big:'5', small:'دقايق أو أقل'};
+  var r=Math.round(m/5)*5;
+  if(r<60) return {big:String(r), small:'دقيقة'};
+  return {big:Math.floor(r/60)+':'+pad(r%60), small:'ساعة'};
+};
+var nextNo = function(){
+  var arr=ticketArr();
+  return arr.length ? Math.max.apply(null, arr.map(function(t){return t.no})) + 1 : 1;
+};
+
+/* ── localStorage ── */
+var STORE_KEY = 'dawrak_my_ticket';
+function saveMyKey(k){ try{ localStorage.setItem(STORE_KEY, k||'') }catch(e){} }
+function saveMyName(n){ try{ localStorage.setItem(STORE_KEY+'_name', n||'') }catch(e){} }
+function loadMyName(){ try{ return localStorage.getItem(STORE_KEY+'_name')||'' }catch(e){ return '' } }
+function loadMyKey(){
+  try{ return localStorage.getItem(STORE_KEY)||null }catch(e){ return null }
+}
+
+/* ── Firebase listeners ── */
+var todayKey = function(){
+  var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+};
+var TODAY = todayKey();
+
+function startListeners(){
+  db.ref('clinics/main/settings').on('value', function(snap){
+    var v=snap.val()||{};
+    state.clinic.name      = v.name      || 'العيادة';
+    state.clinic.specialty = v.specialty || '';
+    state.clinic.address   = v.address   || '';
+    state.clinic.hours     = v.hours     || '';
+    state.clinic.phone     = v.phone     || '';
+    state.clinic.avg       = v.avg       || 15;
+    state.clinic.open      = v.open !== false;
+    render();
+  });
+  db.ref('clinics/main/days/'+TODAY+'/queue').on('value', function(snap){
+    state.tickets = snap.val() || {};
+    render();
+  });
+  /* كود اليوم نفسه بقى للستاف بس؛ هنا بنعرف بس إن فيه كود مطلوب. التحقق منه بيتم في الـrules وقت الحجز */
+  db.ref('clinics/main/days/'+TODAY+'/codeOn').on('value', function(snap){
+    state.codeOn = snap.val() === true; state.codeKnown = true;
+    state.codeOk = state.codeOn && !!loadCodeOk();
+    render();
+  });
+}
+var CODE_SESSION_KEY='dawrak_code_ok_'+TODAY;
+function clearCodeOk(){ try{ sessionStorage.removeItem(CODE_SESSION_KEY) }catch(e){} }
+function loadCodeOk(){ try{ return sessionStorage.getItem(CODE_SESSION_KEY) }catch(e){ return null } }
+function saveCodeOk(code){ try{ sessionStorage.setItem(CODE_SESSION_KEY, code) }catch(e){} }
+
+
+/* ── render ── */
+var rendered = false;
+function render(){
+  var me = state.myKey && state.tickets[state.myKey]
+    ? Object.assign({},state.tickets[state.myKey],{_key:state.myKey})
+    : null;
+  var cur = inside(), w = waiting();
+  var html = '';
+
+  /* clinic header */
+  var openCls = state.clinic.open ? 'open' : 'closed';
+  var openTxt = state.clinic.open ? 'الحجز مفتوح' : 'الحجز متوقف';
+  html += '<header class="card" style="margin-bottom:14px;display:flex;align-items:center;gap:12px;">'
+    +'<div style="flex:1;min-width:0">'
+    +'<div style="font-family:var(--f-d);font-weight:700;font-size:17px">'+esc(state.clinic.name)+'</div>'
+    +(state.clinic.specialty?'<div style="font-size:13px;color:var(--muted)">'+esc(state.clinic.specialty)+'</div>':'')
+    +(state.clinic.address?'<div style="font-size:12px;color:var(--muted);margin-top:2px">📍 '+esc(state.clinic.address)+'</div>':'')
+    +(state.clinic.hours?'<div style="font-size:12px;color:var(--muted);margin-top:1px">🕒 '+esc(state.clinic.hours)+'</div>':'')
+    +'</div>'
+    +'<span class="chip '+openCls+'"><i></i>'+openTxt+'</span>'
+    +'</header>';
+
+  if(!me){
+    /* board */
+    html += '<div class="board">';
+    if(state.clinic.open){
+      html += '<div><span>الدور دلوقتي</span><b>'+(cur?cur.no:'—')+'</b><small>'+(cur?'جوّه الكشف':'مفيش جوّه')+'</small></div>';
+      html += '<div><span>منتظرين</span><b>'+w.length+'</b><small>في الصالة وبرا</small></div>';
+      var p=waitParts(w.length*state.clinic.avg+remaining());
+      html += '<div><span>لو حجزت</span><b>'+esc(p.big)+'</b><small>'+esc(p.small||'تقريبًا')+'</small></div>';
+    } else {
+      html += '<div><span>الدور دلوقتي</span><b>—</b></div>';
+      html += '<div><span>منتظرين</span><b>—</b></div>';
+      html += '<div><span>لو حجزت</span><b>—</b></div>';
+    }
+    html += '</div>';
+
+    if(state.clinic.open && state.codeOn && !state.codeOk){
+      /* gate: must enter today's code, printed at the clinic, before booking */
+      html += '<div class="card">'
+        +'<div class="sheet-head"><h2>كود اليوم</h2></div>'
+        +'<form id="code-form" novalidate>'
+        +'<div><label for="f-code">الكود</label>'
+        +'<input id="f-code" type="text" inputmode="numeric" dir="ltr" maxlength="4" placeholder="0000" style="text-align:center;letter-spacing:6px;font-size:22px;font-family:var(--f-d);font-weight:700">'
+        +'<p class="err" id="e-code" role="alert">'+esc(state.codeErr)+'</p></div>'
+        +'<button class="btn btn-primary btn-block" type="submit">تأكيد</button>'
+        +'</form></div>';
+    } else if(state.clinic.open && !state.codeOn){
+      /* مفيش كود لليوم = الحجز لسه ما بدأش (لازم الكود الأول عشان تعرف تحجز) */
+      html += '<div class="card"><h2 style="margin-bottom:6px">'+(state.codeKnown?'الحجز لسه ما بدأش النهاردة':'جاري التحميل…')+'</h2>'
+        +(state.codeKnown?'<p class="muted">اسأل الاستقبال، وهتقدر تحجز أول ما العيادة تفتح الحجز.</p>':'')+'</div>';
+    } else if(state.clinic.open){
+      /* book form */
+      var nn = nextNo();
+      html += '<div class="card">'
+        +'<div class="sheet-head"><h2>احجز دورك</h2><p>اكتب بياناتك وهتاخد رقمك على طول.</p></div>'
+        +'<form id="book-form" novalidate>'
+        +'<div><label for="f-name">الاسم بالكامل</label>'
+        +'<input id="f-name" type="text" autocomplete="name">'
+        +'<p class="err" id="e-name" role="alert"></p></div>'
+        +'<div><label for="f-phone">رقم الموبايل</label>'
+        +'<input id="f-phone" type="tel" inputmode="numeric" autocomplete="tel" dir="ltr" placeholder="01xxxxxxxxx" maxlength="14">'
+        +'<p class="err" id="e-phone" role="alert"></p></div>'
+        +'<div class="two"><div>'
+        +'<label for="f-age">السن</label>'
+        +'<input id="f-age" type="number" inputmode="numeric" min="0" max="120" dir="ltr" placeholder="34">'
+        +'<p class="err" id="e-age" role="alert"></p>'
+        +'</div><fieldset>'
+        +'<legend>النوع</legend>'
+        +'<div class="seg">'
+        +'<label><input type="radio" name="gender" value="ذكر"><span>ذكر</span></label>'
+        +'<label><input type="radio" name="gender" value="أنثى"><span>أنثى</span></label>'
+        +'</div><p class="err" id="e-gender" role="alert"></p></fieldset></div>'
+        +'<fieldset><legend>نوع الزيارة</legend><div class="seg">'
+        +'<label><input type="radio" name="type" value="كشف جديد" checked><span>كشف جديد</span></label>'
+        +'<label><input type="radio" name="type" value="إعادة"><span>إعادة</span></label>'
+        +'<label><input type="radio" name="type" value="استشارة"><span>استشارة</span></label>'
+        +'</div></fieldset>'
+        +'<div><label for="f-why">سبب الزيارة</label>'
+        +'<textarea id="f-why" rows="2"></textarea>'
+        +'<p class="err" id="e-why" role="alert"></p></div>'
+        +'<div><label for="f-chronic">أمراض مزمنة أو حساسية <span class="opt">(لو فيه)</span></label>'
+        +'<input id="f-chronic" type="text"></div>'
+        +'<button class="btn btn-primary btn-block" type="submit">احجز دوري'
+        +' <span class="pill-no">رقم <b>'+nn+'</b></span></button>'
+        +'<p class="fine">بياناتك بتوصل للعيادة بس.</p>'
+        +'</form></div>';
+    } else {
+      /* closed */
+      html += '<div class="card">'
+        +'<h2 style="margin-bottom:6px">الحجز متوقف دلوقتي</h2>'
+        +'<p class="muted">العيادة مش بتستقبل حجز جديد حاليًا.</p>';
+      if(state.clinic.address) html += '<p class="muted small" style="margin-top:8px">📍 '+esc(state.clinic.address)+'</p>';
+      if(state.clinic.hours)   html += '<p class="muted small" style="margin-top:2px">🕒 '+esc(state.clinic.hours)+'</p>';
+      if(state.clinic.phone){
+        var d=toLatin(state.clinic.phone).replace(/\D/g,'');
+        html += '<div class="callbox">'
+          +'<span class="small muted">اسأل الاستقبال</span>'
+          +'<a class="callno ltr" href="tel:'+esc(d)+'">'+esc(d)+'</a>'
+          +'</div>';
+      }
+      html += '</div>';
+    }
+  } 
+  else {
+    /* ticket view */
+    var live = (me.status==='waiting'||me.status==='in');
+    var stubs='', strip='', note='', acts='';
+
+    if(me.status==='waiting'){
+      var ahead = waiting().filter(function(x){ return x.no<me.no }).length + (cur?1:0);
+      var wait  = waitFor(me), p2 = waitParts(wait);
+      stubs = '<div class="stubs">'
+        +'<div><span>قبلك</span><b>'+ahead+'</b></div>'
+        +'<div><span>الانتظار</span><b>'+esc(p2.big)+'</b><span>'+esc(p2.small)+'</span></div>'
+        +'<div><span>الدخول تقريبًا</span><b class="t">'+(wait<1?'دلوقتي':esc(fmtTime(Date.now()+wait*MIN)))+'</b></div>'
+        +'</div>';
+
+      var items = ticketArr().filter(function(t){ return (t.status==='in'||t.status==='waiting')&&t.no<=me.no });
+      strip = '<div class="place"><h3>مكانك في الدور</h3><div class="strip">'
+        +items.map(function(t){
+          var cls = t._key===me._key?'me':(t.status==='in'?'in':'');
+          var cap = t._key===me._key?'أنت':(t.status==='in'?'جوّه':'');
+          return '<div class="ch '+cls+'"><span>'+t.no+'</span><small>'+cap+'</small></div>';
+        }).join('')+'</div></div>';
+
+      if(ahead===0)     note='<div class="note go"><b>دورك جه!</b><span>ادخل العيادة دلوقتي.</span></div>';
+      else if(ahead<=3)  note='<div class="note near"><b>فاضل '+ahead+' قبلك</b><span>لازم تبقي في العيادة دلوفتي</span></div>';
+      else               note='<div class="note calm"><b>لسه بدري</b><span>تقدر تستنى بعيد، الصفحة بتتحدث لوحدها.</span></div>';
+
+      acts = state.cancelAsk
+        ? '<div class="confirm"><span>متأكد إنك عايز تلغي؟</span>'
+          +'<button class="btn btn-bad btn-sm" id="btn-cancel-yes">أيوه، ألغي</button>'
+          +'<button class="btn btn-ghost btn-sm" id="btn-cancel-no">لأ</button></div>'
+        : '<div class="row-acts"><button class="btn btn-bad btn-sm" id="btn-cancel-ask">إلغاء الحجز</button></div>';
+
+    } else if(me.status==='in'){
+      note='<div class="note go"><b>دورك بدأ</b><span>الكشف شغال دلوقتي.</span></div>';
+    } else if(me.status==='done'){
+      note='<div class="note done"><b>تم الكشف</b><span>سلامتك وشكرًا لزيارتك.</span></div>';
+      acts='<div class="row-acts"><button class="btn btn-ghost btn-sm" id="btn-rebook">احجز دور جديد</button></div>';
+    } else if(me.status==='noshow'){
+      note='<div class="note bad"><b>اتسجل إنك ماحضرتش دورك</b><span>تقدر تحجز دور جديد.</span></div>';
+      acts='<div class="row-acts"><button class="btn btn-ghost btn-sm" id="btn-rebook">احجز دور جديد</button></div>';
+    } else {
+      note='<div class="note bad"><b>تم إلغاء حجزك</b><span>تقدر تحجز دور جديد في أي وقت.</span></div>';
+      acts='<div class="row-acts"><button class="btn btn-ghost btn-sm" id="btn-rebook">احجز دور جديد</button></div>';
+    }
+
+    var STATUS_LABEL={waiting:'منتظر',in:'جوّه الكشف',done:'تم الكشف',noshow:'لم يحضر',cancelled:'ألغى الحجز'};
+    html += '<div class="ticket'+(live?'':' off')+'">'
+      +'<div class="tk-top">'
+      +'<div class="tk-meta"><span>تذكرة دور</span><span>'+esc(df.format(new Date()))+'</span></div>'
+      +'<div class="tk-main">'
+      +'<div><span class="tk-label">رقم دورك</span><div class="tk-no">'+me.no+'</div></div>'
+      +'<div class="tk-now"><span class="tk-label">الدور دلوقتي</span><b>'+(cur?cur.no:'—')+'</b></div>'
+      +'</div>'
+      +'<p class="tk-name">'+esc(state.myName)+'</p>'
+      +'</div>'
+      +(stubs?'<div class="perf"><i></i></div>'+stubs:'<div class="tk-off">'+esc(STATUS_LABEL[me.status]||me.status)+'</div>')
+      +'</div>';
+
+    html += note + strip + acts;
+    if(live) html += '<p class="live"><i></i><span>بيتحدّث تلقائيًا · آخر تحديث '+esc(fmtTime(Date.now()))+'</span></p>';
+  }
+
+  ROOT.innerHTML = html;
+  rendered = true;
+  bindForm();
+}
+
+function bindForm(){
+  var form = document.getElementById('book-form');
+  if(form) form.addEventListener('submit', submitBook);
+
+  var codeForm = document.getElementById('code-form');
+  if(codeForm) codeForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var val = toLatin(document.getElementById('f-code').value).trim();
+    if(/^\d{4}$/.test(val)){
+      state.codeOk = true; state.codeErr='';
+      saveCodeOk(val);   /* بيتراجع في الـrules وقت الحجز، لو غلط هيرجع هنا */
+    } else {
+      state.codeErr = 'اكتب الكود (4 أرقام).';
+    }
+    render();
+  });
+
+  var btnCancelAsk = document.getElementById('btn-cancel-ask');
+  if(btnCancelAsk) btnCancelAsk.onclick = function(){ state.cancelAsk=true; render(); };
+  var btnCancelNo = document.getElementById('btn-cancel-no');
+  if(btnCancelNo) btnCancelNo.onclick = function(){ state.cancelAsk=false; render(); };
+  var btnCancelYes = document.getElementById('btn-cancel-yes');
+  if(btnCancelYes) btnCancelYes.onclick = function(){
+    if(state.myKey){
+      db.ref('clinics/main/days/'+TODAY+'/queue/'+state.myKey+'/status').set('cancelled');
+      if(state.tickets[state.myKey]) state.tickets[state.myKey].status='cancelled';
+    }
+    state.cancelAsk=false;
+    render();
+  };
+  var btnRebook = document.getElementById('btn-rebook');
+  if(btnRebook) btnRebook.onclick = function(){ state.myKey=null; saveMyKey(null); state.myName=''; saveMyName(''); render(); };
+}
+
+function submitBook(e){
+  e.preventDefault();
+  var form = e.currentTarget;
+  var name   = document.getElementById('f-name').value.trim().replace(/\s+/g,' ');
+  var phone  = toLatin(document.getElementById('f-phone').value).replace(/[\s-]/g,'');
+  var ageRaw = toLatin(document.getElementById('f-age').value);
+  var age    = parseInt(ageRaw, 10);
+  var g      = form.querySelector('input[name=gender]:checked');
+  var type   = form.querySelector('input[name=type]:checked').value;
+  var why    = document.getElementById('f-why').value.trim();
+  var chronic= document.getElementById('f-chronic').value.trim();
+  var errs   = {};
+
+  if(name.length<3)    errs.name='اكتب اسمك (3 حروف على الأقل).';
+  if(!/^01[0125]\d{8}$/.test(phone)) errs.phone='رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01.';
+
+  if(!(age>=0&&age<=120)) errs.age='اكتب السن .';
+  if(!g)           errs.gender='اختار النوع.';
+  if(why.length<2) errs.why='اكتب سبب الزيارة .';
+
+  ['name','phone','age','gender','why'].forEach(function(k){
+    var el=document.getElementById('e-'+k); if(el) el.textContent=errs[k]||'';
+  });
+  if(Object.keys(errs).length){
+    var first=Object.keys(errs)[0];
+    var el=first==='gender'?form.querySelector('input[name=gender]'):document.getElementById('f-'+first);
+    if(el) el.focus(); return;
+  }
+
+  if(state.booking) return; /* منع ضغط مزدوج على زرار الحجز */
+  state.booking = true;
+  var submitBtn = form.querySelector('button[type=submit]');
+  if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'جاري الحجز…'; }
+
+  /* الترتيب: (1) البيانات الخاصة الأول — الـrules بتتحقق من الكود اليومي هنا، فلو الكود غلط ما بنضيّعش رقم دور.
+     (2) رقم الدور من عدّاد Firebase ذري (transaction) عشان اتنين حجزوا في نفس اللحظة ياخدوا أرقام مختلفة.
+     (3) الطابور العام (رقم + حالة + الاسم الأول بس). */
+  var base = 'clinics/main/days/'+TODAY;
+  var id = db.ref(base+'/queue').push().key;
+  /* بيانات المريض الكاملة في مكان خاص (الستاف بس يقراه) */
+  var priv = { name:name, phone:phone, age:age, gender:g.value, type:type, why:why, chronic:chronic, src:'qr' };
+  if(state.codeOn) priv.code = loadCodeOk() || '';
+  db.ref(base+'/private/'+id).set(priv).then(function(){
+    return db.ref(base+'/counter').transaction(function(cur){ return (cur||0) + 1; });
+  }).then(function(result){
+    var no = result.snapshot.val();
+    var pubT = { no:no, first:name.split(' ')[0].slice(0,30), status:'waiting', createdAt:Date.now() };
+    return db.ref(base+'/queue/'+id).set(pubT).then(function(){
+      state.myKey = id; saveMyKey(id);
+      state.myName = name; saveMyName(name);
+      
+      state.tickets[id] = pubT;
+      state.booking = false;
+      window.scrollTo(0,0);
+      render();
+    });
+  }).catch(function(err){
+    if(window.console) console.error('booking failed:', err && (err.stack||err.message||err));
+    state.booking = false;
+    if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'احجز دوري'; }
+    if(state.codeOn && err && err.code === 'PERMISSION_DENIED'){
+      /* غالبًا الكود غلط أو اتغيّر */
+      state.codeOk = false; state.codeErr = 'الكود مش صح، اسأل الاستقبال.'; clearCodeOk();
+      render(); return;
+    }
+    document.getElementById('e-name').textContent = 'حصل خطأ، جرّب تاني.';
+  });
+}
+
+/* ── boot ── */
+state.myKey = loadMyKey();
+state.myName = loadMyName();
+/* validate stored key is still today's ticket */
+if(state.myKey){
+  db.ref('clinics/main/days/'+TODAY+'/queue/'+state.myKey).once('value', function(snap){
+    if(!snap.val()) { state.myKey=null; saveMyKey(null); }
+    startListeners();
+  });
+} else {
+  startListeners();
+}
+</script>
+<div id="app-version" dir="ltr" style="text-align:center;font:11px/1.2 system-ui,sans-serif;color:#8a9a98;padding:6px 0 8px;opacity:.8">v27</div>
+</body>
+</html>

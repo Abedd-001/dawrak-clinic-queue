@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
+<title>شاشة العرض – دورك</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#F4F7F6;--surface:#FFFFFF;--line:#D6E2DF;--ink:#10282A;--muted:#58706F;
+  --brand:#0B6B5E;--brand-soft:#D9F0EA;--on-brand:#FFFFFF;
+  --bad:#96302B;--bad-bg:#FBE3E0;
+  --f-d:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-b:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  color-scheme:only light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0;forced-color-adjust:none}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:16px;display:flex;flex-direction:column}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:var(--f-d)}
+[hidden]{display:none!important}
+
+/* header */
+.hdr{background:var(--surface);border-bottom:2px solid var(--line);padding:16px 32px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr-logo{font-family:var(--f-d);font-weight:700;font-size:22px;color:var(--brand)}
+.hdr-clinic{font-family:var(--f-d);font-weight:600;font-size:20px}
+.hdr-time{font-variant-numeric:tabular-nums;font-size:22px;font-family:var(--f-d);
+  color:var(--muted);min-width:90px;text-align:left}
+
+/* main */
+.main{flex:1;display:flex;flex-direction:column;padding:28px 32px 36px;gap:20px;overflow:hidden}
+
+/* doctor tabs (for filter) */
+.dr-filter{display:flex;gap:10px;flex-wrap:wrap}
+.dr-btn{border:2px solid var(--line);background:var(--surface);border-radius:999px;
+  padding:8px 20px;font-family:var(--f-d);font-weight:600;font-size:15px;cursor:pointer}
+.dr-btn[aria-pressed="true"]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+
+/* cards grid */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;flex:1;align-content:start}
+.dr-card{background:var(--surface);border:2px solid var(--line);border-radius:24px;
+  padding:28px 28px 24px;display:flex;flex-direction:column;gap:16px;transition:border-color .2s}
+.day-code{display:flex;align-items:center;gap:10px;margin:10px 0 0;color:var(--muted);font-size:14px}.day-code b{font-size:30px;letter-spacing:5px;color:var(--brand-ink)}
+.dr-card.active{border-color:var(--brand)}
+.dr-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.dr-name{font-family:var(--f-d);font-weight:700;font-size:20px}
+.dr-spec{color:var(--muted);font-size:14px;margin-top:2px}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;
+  padding:4px 12px;font-size:13px;font-weight:600}
+.chip::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip.open{background:var(--brand-soft);color:var(--brand)}
+.chip.closed{background:var(--bad-bg);color:var(--bad)}
+
+/* current number — big */
+.cur-row{display:flex;align-items:flex-end;gap:16px}
+.cur-no{font-family:var(--f-d);font-weight:800;font-size:96px;line-height:1;
+  color:var(--brand);font-variant-numeric:tabular-nums;min-width:0}
+.cur-no.none{color:var(--line);font-size:72px}
+.cur-meta{display:flex;flex-direction:column;gap:4px;padding-bottom:8px;min-width:0}
+.cur-label{font-size:13.5px;color:var(--muted);font-weight:600}
+.cur-name{font-family:var(--f-d);font-weight:600;font-size:19px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+
+/* waiting row */
+.wait-row{display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
+.wait-label{color:var(--muted);font-size:14px}
+.wait-nums{display:flex;gap:8px;flex-wrap:wrap}
+.wnum{background:var(--bg);border:1.5px solid var(--line);border-radius:10px;
+  width:46px;height:46px;display:grid;place-items:center;
+  font-family:var(--f-d);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.empty-card{font-size:15px;color:var(--muted);padding:4px 0}
+
+/* no doctors */
+.no-data{flex:1;display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-d);font-size:22px;color:var(--muted)}
+
+/* footer */
+.ftr{text-align:center;font-size:12px;color:var(--muted);padding:0 16px 12px}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <span class="hdr-logo"><img src="/logo.svg" alt="" style="height:36px;width:36px;vertical-align:middle;margin-inline-end:10px;border-radius:22%">دورك</span>
+  <span class="hdr-clinic" id="clinic-name">العيادة</span>
+  <span class="hdr-time" id="clock"></span>
+</header>
+
+<main class="main" id="main">
+  <div style="color:var(--muted);font-size:18px;font-family:var(--f-d)">جاري التحميل…</div>
+</main>
+
+<footer class="ftr">دورك — شاشة العرض</footer>
+
+<!-- Firebase -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-database-compat.min.js"></script>
+
+<script>
+/* ══════════════════════════════════════
+   FIREBASE CONFIG
+   ══════════════════════════════════════ */
+var FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "000000000000",
+  appId:             "1:000000000000:web:0000000000000000000000"
+};
+/* ══════════════════════════════════════ */
+
+firebase.initializeApp(FIREBASE_CONFIG);
+var db = firebase.database();
+
+var pad = function(n){ return n<10?'0'+n:''+n };
+
+var TODAY = (function(){
+  var d=new Date();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+})();
+
+/* ── clock ── */
+function updateClock(){
+  var d=new Date();
+  document.getElementById('clock').textContent = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+}
+updateClock(); setInterval(updateClock,1000);
+
+/* ════════════════
+   SOUND
+   ════════════════ */
+var AudioCtx = window.AudioContext || window.webkitAudioContext;
+var audioCtx = null;
+var soundEnabled = false;
+
+function ensureAudio(){
+  if(audioCtx) return;
+  try{ audioCtx = new AudioCtx(); }catch(e){}
+}
+
+/* bell-like tone: 880Hz → 659Hz two-tone */
+function playBell(){
+  if(!audioCtx || !soundEnabled) return;
+  try{
+    var t = audioCtx.currentTime;
+    function tone(freq, start, dur, vol){
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t+start);
+      gain.gain.setValueAtTime(0, t+start);
+      gain.gain.linearRampToValueAtTime(vol, t+start+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t+start+dur);
+      osc.start(t+start); osc.stop(t+start+dur+0.05);
+    }
+    tone(880, 0,   0.6, 0.35);
+    tone(659, 0.3, 0.8, 0.25);
+    tone(523, 0.7, 0.9, 0.18);
+  }catch(e){}
+}
+
+/* الصوت: بنحاول نفتحه أول ما الشاشة تتفتح؛ لو المتصفح مانع، بيتفعّل بأول لمسة على الشاشة */
+var soundBadge = document.createElement('div');
+soundBadge.textContent = '🔇 دوس أي مكان على الشاشة مرة واحدة لتفعيل الصوت';
+soundBadge.style.cssText = 'position:fixed;bottom:14px;inset-inline-start:14px;background:rgba(16,40,42,.88);color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;z-index:60';
+soundBadge.hidden = true;
+document.body.appendChild(soundBadge);
+function syncSound(){
+  if(audioCtx && audioCtx.state==='running'){ soundEnabled = true; soundBadge.hidden = true; }
+  else { soundBadge.hidden = false; }
+}
+function wakeAudio(){
+  ensureAudio();
+  if(!audioCtx) return;
+  try{ audioCtx.onstatechange = syncSound; }catch(e){}
+  var p = audioCtx.state==='suspended' ? audioCtx.resume() : null;
+  if(p && p.then) p.then(syncSound, syncSound); else syncSound();
+}
+['pointerdown','keydown','touchstart'].forEach(function(ev){
+  document.addEventListener(ev, function(){ wakeAudio(); if(soundEnabled) soundBadge.hidden = true; }, {capture:true});
+});
+wakeAudio();
+setTimeout(syncSound, 400);
+
+/* ════════════════
+   STATE
+   ════════════════ */
+var state = {
+  clinicName: 'العيادة',
+  /* drId → { name, specialty, open, cur: ticket|null, waiting: [ticket,...] } */
+  doctors: {},
+  /* which drId to show, or 'all' */
+  filter: 'all',
+  /* previous "in" ticket per doctor to detect changes → ring bell */
+  prevIn: {}
+};
+
+/* URL param: ?dr=drId → start with that doctor filtered */
+(function(){
+  try{
+    var p = new URLSearchParams(window.location.search);
+    var dr = p.get('dr');
+    if(dr) state.filter = dr;
+  }catch(e){}
+})();
+
+/* ════════════════
+   RENDER
+   ════════════════ */
+function esc(s){ return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+
+function render(){
+  var main = document.getElementById('main');
+  var drIds = Object.keys(state.doctors);
+
+  /* filter row */
+  if(drIds.length > 1){
+    var fhtml = '<div class="dr-filter" style="margin-bottom:4px">'
+      +'<button class="dr-btn" data-filter="all" aria-pressed="'+(state.filter==='all')+'">الكل</button>';
+    drIds.forEach(function(id){
+      var d = state.doctors[id];
+      fhtml += '<button class="dr-btn" data-filter="'+esc(id)+'" aria-pressed="'+(state.filter===id)+'">'+esc(d.name||id)+'</button>';
+    });
+    fhtml += '</div>';
+  } else {
+    var fhtml = '';
+  }
+
+  var shown = drIds.filter(function(id){
+    return state.filter==='all' || state.filter===id;
+  });
+
+  if(!shown.length){
+    main.innerHTML = fhtml + '<div class="no-data">لا يوجد أطباء حتى الآن</div>';
+    bindFilter(); return;
+  }
+
+  var codeHtml = state.code ? '<div class="day-code" style="justify-content:center;margin:0 0 14px"><span>كود اليوم</span><b dir="ltr">'+esc(state.code)+'</b></div>' : '';
+  var cardsHtml = '<div class="cards">';
+  shown.forEach(function(id){
+    var d = state.doctors[id];
+    var cur = d.cur;
+    var waiting = d.waiting||[];
+    var active = !!cur;
+
+    cardsHtml += '<div class="dr-card'+(active?' active':'')+'">';
+    /* header */
+    cardsHtml += '<div class="dr-card-header">'
+      +'<div><div class="dr-name">'+esc(d.name||id)+'</div>'+(d.specialty?'<div class="dr-spec">'+esc(d.specialty)+'</div>':'')+'</div>'
+      +'<span class="chip '+(d.open?'open':'closed')+'">'+(d.open?'مفتوح':'متوقف')+'</span>'
+      +'</div>';
+
+    /* current number */
+    if(cur){
+      cardsHtml += '<div class="cur-row">'
+        +'<div class="cur-no">'+cur.no+'</div>'
+        +'<div class="cur-meta"><span class="cur-label">جوّه الكشف دلوقتي</span>'
+        +'<span class="cur-name">'+esc(cur.first||'')+'</span></div>'
+        +'</div>';
+    } else {
+      cardsHtml += '<div class="cur-row">'
+        +'<div class="cur-no none">—</div>'
+        +'<div class="cur-meta"><span class="cur-label">مفيش حد جوّه دلوقتي</span></div>'
+        +'</div>';
+    }
+
+    /* waiting */
+    cardsHtml += '<div class="wait-row"><span class="wait-label">منتظرين ('+waiting.length+')</span>';
+    if(!waiting.length){
+      cardsHtml += '<span class="empty-card">مفيش منتظرين</span>';
+    } else {
+      cardsHtml += '<div class="wait-nums">';
+      /* show up to 8 waiting numbers */
+      waiting.slice(0,8).forEach(function(t){
+        cardsHtml += '<div class="wnum">'+t.no+'</div>';
+      });
+      if(waiting.length>8) cardsHtml += '<div class="wnum" style="font-size:13px">+'+( waiting.length-8 )+'</div>';
+      cardsHtml += '</div>';
+    }
+    cardsHtml += '</div>';
+
+    cardsHtml += '</div>'; /* .dr-card */
+  });
+  cardsHtml += '</div>';
+
+  main.innerHTML = fhtml + codeHtml + cardsHtml;
+  bindFilter();
+}
+
+function bindFilter(){
+  document.querySelectorAll('[data-filter]').forEach(function(b){
+    b.onclick = function(){
+      ensureAudio();
+      if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+      soundEnabled = true;
+      state.filter = b.dataset.filter;
+      render();
+    };
+  });
+}
+
+/* ════════════════
+   LISTENERS
+   ════════════════ */
+/* clinic name */
+db.ref('clinics/dayCode/'+TODAY+'/code').on('value', function(sc){ state.code = sc.val()||''; render(); });
+db.ref('clinics/settings/name').on('value', function(snap){
+  var n = snap.val();
+  if(n){ state.clinicName = n; document.getElementById('clinic-name').textContent = n; }
+});
+
+/* doctors */
+/* الدليل العام للدكاترة (الستاف بيحدّثه) — الشاشة مش بتقرا أي بيانات خاصة */
+db.ref('clinics/directory').on('child_added', function(snap){
+  var drId = snap.key;
+  if(!state.doctors[drId]){
+    state.doctors[drId] = { name: drId, specialty:'', open:true, cur:null, waiting:[] };
+  }
+
+  /* settings */
+  db.ref('clinics/doctors/'+drId+'/settings').on('value', function(s2){
+    var v = s2.val()||{};
+    state.doctors[drId].name      = v.name      || drId;
+    state.doctors[drId].specialty = v.specialty || '';
+    state.doctors[drId].open      = v.open !== false;
+    render();
+  });
+
+  /* tickets */
+  db.ref('clinics/doctors/'+drId+'/days/'+TODAY+'/queue').on('value', function(s3){
+    var tickets = s3.val() || {};
+    var list = Object.keys(tickets).map(function(k){ return Object.assign({},tickets[k],{_key:k}) });
+    list.sort(function(a,b){ return a.no - b.no });
+    state.doctors[drId].cur     = list.find(function(t){ return t.status==='in' }) || null;
+    state.doctors[drId].waiting = list.filter(function(t){ return t.status==='waiting' });
+
+    /* bell: ring when "in" ticket changes — skip the very first snapshot (init) */
+    var curNo = state.doctors[drId].cur ? state.doctors[drId].cur.no : null;
+    var isInit = !state.doctors[drId]._initialized;
+    state.doctors[drId]._initialized = true;
+    if(!isInit && state.prevIn[drId] !== curNo && curNo !== null){
+      playBell();
+    }
+    state.prevIn[drId] = curNo;
+
+    render();
+  });
+});
+
+/* handle doctor removed */
+db.ref('clinics/directory').on('child_removed', function(snap){
+  delete state.doctors[snap.key];
+  delete state.prevIn[snap.key];
+  if(state.filter === snap.key) state.filter = 'all';
+  render();
+});
+</script>
+<div id="app-version" dir="ltr" style="text-align:center;font:11px/1.2 system-ui,sans-serif;color:#8a9a98;padding:6px 0 8px;opacity:.8">v27</div>
+</body>
+</html>

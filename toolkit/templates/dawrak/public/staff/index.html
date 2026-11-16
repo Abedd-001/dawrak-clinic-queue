@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="only light">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
+<title>لوحة العيادة – دورك</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F4F7F6;--surface:#FFFFFF;--surface-2:#F0F4F3;--ink:#10282A;--muted:#58706F;--line:#D6E2DF;
+  --brand:#0B6B5E;--on-brand:#FFFFFF;--brand-ink:#0B6B5E;--brand-soft:#D9F0EA;
+  --wait-bg:#FFEFCF;--wait-fg:#7A4700;--wait-dot:#E08A00;
+  --done-bg:#E2EBE9;--done-fg:#4D6563;
+  --bad-bg:#FBE3E0;--bad-fg:#96302B;--off:#8CA3A0;
+  --shadow:0 1px 3px rgba(16,40,42,.07),0 8px 24px rgba(16,40,42,.09);
+  --f-d:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-b:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  color-scheme:only light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg)} body{background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:15px;line-height:1.65;margin:0;forced-color-adjust:none}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:var(--f-d);text-wrap:balance;line-height:1.3}
+button{font:inherit;cursor:pointer} a{color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--brand-ink);outline-offset:2px}
+.muted{color:var(--muted)} .small{font-size:13px} .ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1200px;margin-inline:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding-block:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px))}
+.logo{font-family:var(--f-d);font-weight:700;font-size:20px;color:var(--brand-ink)}
+.bar-title{font-family:var(--f-d);font-weight:600;font-size:17px;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;
+  padding:1px 10px;font-size:12px;color:var(--muted);white-space:nowrap}
+
+/* page */
+.page{max-width:1200px;margin-inline:auto;padding-block:24px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px))}
+.grid{display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:960px){.grid{grid-template-columns:minmax(0,1fr) 300px;gap:22px}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+
+/* card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.card h2{font-size:16px;margin-bottom:14px}
+
+/* serving panel */
+.serving{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center;
+  background:var(--brand-soft);border-radius:18px;padding:20px}
+@media(max-width:700px){.serving{grid-template-columns:1fr;gap:12px}}
+.sv-no .lbl{display:block;font-size:12px;color:var(--brand-ink);font-weight:600}
+.sv-no b{display:block;font-family:var(--f-d);font-weight:700;font-size:80px;line-height:1;
+  color:var(--brand-ink);font-variant-numeric:tabular-nums}
+.sv-info{display:flex;flex-direction:column;gap:5px;min-width:0}
+.sv-info h2{font-size:20px;margin-bottom:0}
+.sv-info .meta{color:var(--muted);font-size:13.5px}
+.meter{height:5px;border-radius:99px;background:var(--surface);overflow:hidden;max-width:280px;margin-top:4px}
+.meter i{display:block;height:100%;background:var(--brand);border-radius:99px}
+.sv-act{display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:140px}
+
+/* stats */
+.stats{display:flex;flex-wrap:wrap;gap:12px 36px;padding-block:12px;border-block:1px solid var(--line)}
+.stat b{display:block;font-family:var(--f-d);font-weight:700;font-size:28px;line-height:1.15;
+  font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--muted)}
+
+/* queue */
+.qtop{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.fchip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;
+  padding:5px 12px;font-size:13px}
+.fchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.row{display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:6px 12px;
+  padding:14px 2px;border-top:1px solid var(--line);align-items:start}
+.row:first-child{border-top:0}
+.rno{width:50px;height:50px;border-radius:13px;display:grid;place-items:center;
+  font-family:var(--f-d);font-weight:700;font-size:21px;
+  background:var(--surface-2);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.row.in .rno{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.row.waiting .rno{background:var(--wait-bg);color:var(--wait-fg);border-color:transparent}
+.row.done .who,.row.noshow .who,.row.cancelled .who{opacity:.7}
+.who{min-width:0;display:flex;flex-direction:column;gap:3px}
+.who-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.who-top strong{font-family:var(--f-d);font-size:15.5px}
+.who-top .meta{color:var(--muted);font-size:13px}
+.facts{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted)}
+.row-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:600px){
+  .row{grid-template-columns:50px minmax(0,1fr)}
+  .row-side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center}
+}
+.empty{padding:24px 8px;text-align:center;color:var(--muted)}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;
+  padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.waiting{background:var(--wait-bg);color:var(--wait-fg)}
+.pill.in{background:var(--brand-soft);color:var(--brand-ink)}
+.pill.done{background:var(--done-bg);color:var(--done-fg)}
+.pill.noshow,.pill.cancelled{background:var(--bad-bg);color:var(--bad-fg)}
+.flag{display:inline-block;background:var(--wait-bg);color:var(--wait-fg);
+  padding:1px 8px;border-radius:6px;font-size:12.5px;font-weight:500}
+.tag-staff{display:inline-block;border:1px solid var(--line);border-radius:999px;
+  padding:0 7px;font-size:11px;color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;
+  padding:0 16px;border-radius:11px;border:1.5px solid transparent;
+  font-family:var(--f-d);font-weight:600;font-size:14px;line-height:1.2}
+.btn-primary{background:var(--brand);color:var(--on-brand)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-bad{background:transparent;border-color:var(--line);color:var(--bad-fg)}
+.btn-sm{min-height:34px;padding:0 11px;font-size:12.5px;border-radius:9px}
+.btn-block{width:100%;min-height:46px;font-size:15px}
+button:disabled{opacity:.4;cursor:not-allowed}
+
+/* add form */
+.addbox{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:10px}
+.addbox h3{font-size:15px;margin-bottom:12px}
+.add-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.add-grid>*{min-width:0}
+.span2{grid-column:1 / -1}
+label,legend{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;padding:0}
+.opt{font-weight:400;color:var(--muted)}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+input[type=text],input[type=tel],input[type=number],input:not([type]){
+  width:100%;min-height:44px;padding:9px 13px;border-radius:10px;
+  border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit}
+input::placeholder{color:var(--muted);opacity:.8}
+input:focus{outline:none;border-color:var(--brand-ink);box-shadow:0 0 0 3px var(--brand-soft)}
+input[dir=ltr]{text-align:right}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:5px}
+.seg label{position:relative;margin:0;font-weight:500}
+.seg input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.seg span{display:grid;place-items:center;min-height:42px;padding:5px 6px;text-align:center;font-size:13px;
+  border:1.5px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.seg input:checked+span{background:var(--brand-soft);border-color:var(--brand-ink);color:var(--brand-ink);font-weight:600}
+.err{color:var(--bad-fg);font-size:12.5px;margin-top:4px}
+.err:empty{display:none}
+.row-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+/* QR */
+.qr-box{background:#fff;border-radius:12px;padding:12px;display:grid;place-items:center;
+  margin-block:12px 10px;border:1px solid var(--line)}
+.qr-url{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere;margin-top:6px}
+
+/* settings */
+.setting{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding-block:12px;border-top:1px solid var(--line)}
+.setting:first-of-type{border-top:0}
+.setting h3{font-size:14px}
+.setting.col{flex-direction:column;align-items:stretch}
+.stepper{display:flex;align-items:center;gap:5px}
+.stepper button{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);
+  background:var(--surface-2);font-size:18px;line-height:1}
+.stepper output{min-width:68px;text-align:center;font-family:var(--f-d);font-weight:600;font-size:13.5px}
+.switch{position:relative;flex:none;width:48px;height:28px;border-radius:999px;
+  border:0;padding:0;background:var(--off)}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;
+  border-radius:50%;background:#fff;transition:inset-inline-start .15s}
+.switch[aria-checked="true"]{background:var(--brand)}
+.switch[aria-checked="true"]::after{inset-inline-start:23px}
+@media(prefers-reduced-motion:reduce){.switch::after{transition:none}}
+
+/* login */
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100svh;gap:16px;
+  padding:24px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.login-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;
+  padding:28px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px}
+.login-box h1{font-size:22px;text-align:center}
+.login-box p{color:var(--muted);font-size:13.5px;text-align:center}
+
+/* toast */
+.toast{position:fixed;inset-inline:0;bottom:0;z-index:20;display:flex;justify-content:center;
+  pointer-events:none;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.toast span{background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;
+  font-weight:500;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s}
+.toast.show span{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.toast span{transition:none}}
+
+/* splash */
+.splash{display:flex;align-items:center;justify-content:center;min-height:100svh}
+.splash-logo{font-family:var(--f-d);font-weight:700;font-size:40px;color:var(--brand-ink)}
+/* footer */
+.site-footer{max-width:1200px;margin-inline:auto;text-align:center;padding:8px 16px 24px;
+  color:var(--muted);font-size:11.5px;line-height:1.7}
+.site-footer a{color:var(--brand-ink);text-decoration:none}
+.wa-ok{color:#0B6B5E;font-weight:800;margin-inline-start:2px}
+.wa-sent{border-color:#0B6B5E}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="splash"><div class="splash-logo">دورك</div></div>
+</div>
+<footer class="site-footer">
+  شكرًا لاستخدامك <strong>دورك</strong> — نتمنى لك تجربة سلسة وموفقة!<br>
+  للدعم أو لشراء نسخة مخصصة لعيادتك، تواصل مع المطور:<br>
+  <a href="mailto:mbody2233@gmail.com">mbody2233@gmail.com</a><br>
+  <span style="font-size:10.5px;opacity:.7">© 2026 Abdulrahman Abed. All rights reserved.</span>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"><span></span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-database-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+/* ══════════════════════════════════════════════
+   CONFIG — استبدل القيم دي بـ config من Firebase
+   ══════════════════════════════════════════════ */
+var FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "000000000000",
+  appId:             "1:000000000000:web:0000000000000000000000"
+};
+var CLIENT_URL = "https://YOUR_PROJECT_ID.web.app/";   /* رابط صفحة العميل */
+/* ══════════════════════════════════════════════ */
+
+firebase.initializeApp(FIREBASE_CONFIG);
+var db   = firebase.database();
+var auth = firebase.auth();
+
+var MIN = 60000;
+var APP = document.getElementById('app');
+
+var pad  = function(n){ return n<10?'0'+n:''+n };
+var esc  = function(s){ return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}) };
+var toLatin = function(s){ return s.replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}) };
+var tf = new Intl.DateTimeFormat('ar-EG-u-nu-latn',{hour:'numeric',minute:'2-digit'});
+var df = new Intl.DateTimeFormat('ar-EG-u-nu-latn',{weekday:'long',day:'numeric',month:'long'});
+var fmtTime = function(ms){ return ms ? tf.format(new Date(ms)) : '' };
+/* رابط واتساب برسالة جاهزة للمريض (من غير أي API، الستاف بيدوس ويبعت) */
+function waLink(t){
+  var p=String(t.phone||'').replace(/\D/g,'');
+  if(!p) return '';
+  if(p.charAt(0)==='0') p='20'+p.slice(1);
+  var ahead=waiting().filter(function(x){ return x.no<t.no }).length + (inside()?1:0);
+  var first=(t.first||String(t.name||'').split(' ')[0]);
+  var msg='أهلاً '+first+'، دورك في '+state.clinic.name+' قرب. رقمك '+t.no
+    +(ahead>0?' وفاضل '+ahead+' قبلك':'')+'. من فضلك اتفضل على العيادة.';
+  return 'https://wa.me/'+p+'?text='+encodeURIComponent(msg);
+}
+var fmtPhone = function(p){ return (p||'').length===11?p.slice(0,4)+' '+p.slice(4,7)+' '+p.slice(7):(p||'') };
+
+var TODAY = (function(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()) })();
+
+var state = {
+  clinic:  { name:'العيادة', specialty:'', address:'', hours:'', phone:'', avg:15, open:true, setupDone:false },
+  tickets: {},   /* المدموج: الطابور العام + البيانات الخاصة */
+  queue:   {},
+  priv:    {},
+  filter:  'all',
+  addOpen: false,
+  editUnlocked: false,
+  dailyCode: null
+};
+
+/* ── helpers ── */
+function rebuildTickets(){
+  var m={};
+  Object.keys(state.queue).forEach(function(k){ m[k]=Object.assign({}, state.priv[k]||{}, state.queue[k]); });
+  state.tickets=m;
+}
+var ticketArr = function(){
+  return Object.keys(state.tickets)
+    .map(function(k){ return Object.assign({},state.tickets[k],{_key:k}) })
+    .sort(function(a,b){ return a.no-b.no });
+};
+var inside  = function(){ return ticketArr().find(function(t){ return t.status==='in' }) };
+var waiting = function(){ return ticketArr().filter(function(t){ return t.status==='waiting' }) };
+var remaining = function(){
+  var c=inside(); if(!c) return 0;
+  return Math.max(2, state.clinic.avg - (Date.now()-c.startedAt)/MIN);
+};
+var waitFor = function(t){
+  return waiting().filter(function(x){ return x.no<t.no }).length * state.clinic.avg + remaining();
+};
+var nextNo = function(){
+  var arr=ticketArr();
+  return arr.length ? Math.max.apply(null,arr.map(function(t){return t.no}))+1 : 1;
+};
+var STATUS = {waiting:'منتظر',in:'جوّه الكشف',done:'تم الكشف',noshow:'لم يحضر',cancelled:'لغي الحجز'};
+var RANK   = {in:0,waiting:1,done:2,noshow:3,cancelled:3};
+var FILTERS= [['all','الكل'],['active','منتظرين وجوّه'],['done','تم'],['out','غياب وإلغاء']];
+function matches(t,f){
+  if(f==='all')    return true;
+  if(f==='active') return t.status==='waiting'||t.status==='in';
+  if(f==='done')   return t.status==='done';
+  return t.status==='noshow'||t.status==='cancelled';
+}
+function metaLine(t){
+  var p=[];
+  if(t.age!==null&&t.age!==undefined&&t.age!=='') p.push(t.age+' سنة');
+  if(t.gender) p.push(t.gender);
+  p.push(t.type||'');
+  return p.join(' · ');
+}
+
+/* ── toast ── */
+var toastT;
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.querySelector('span').textContent=msg; el.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(function(){el.classList.remove('show')},2400);
+}
+
+/* ── Firebase ops ── */
+function setStatus(key, status, extra){
+  var up=Object.assign({status:status},extra||{});
+  db.ref('clinics/main/days/'+TODAY+'/queue/'+key).update(up);
+}
+var callingNext=false;
+function callNext(){
+  if(callingNext) return; /* منع دوس مزدوج سريع وقت الزحمة */
+  callingNext=true;
+  setTimeout(function(){ callingNext=false; },800);
+  var cur=inside(), w=waiting();
+  var now=Date.now();
+  if(cur){
+    setStatus(cur._key,'done',{doneAt:now});
+    if(state.tickets[cur._key]) Object.assign(state.tickets[cur._key],{status:'done',doneAt:now});
+  }
+  if(w[0]){
+    setStatus(w[0]._key,'in',{startedAt:now});
+    if(state.tickets[w[0]._key]) Object.assign(state.tickets[w[0]._key],{status:'in',startedAt:now});
+    toast('الدور الجاي: '+w[0].no+' · '+w[0].name);
+  }
+  render();
+}
+function saveSettings(){
+  return db.ref('clinics/main/settings').update({
+    name:      state.clinic.name,
+    specialty: state.clinic.specialty,
+    address:   state.clinic.address,
+    hours:     state.clinic.hours,
+    phone:     state.clinic.phone,
+    avg:       state.clinic.avg,
+    open:      state.clinic.open,
+    setupDone: true
+  });
+}
+/* لو مفيش كود لليوم، بنولّده أوتوماتيك أول ما الستاف يفتح الصفحة (من غير كود الحجز مقفول على المرضى) */
+function ensureDailyCode(){
+  var code = String(Math.floor(1000+Math.random()*9000));
+  var base = 'clinics/main/days/'+TODAY;
+  db.ref(base+'/code').transaction(function(c){ return c || code; })
+    .then(function(){ return db.ref(base+'/codeOn').set(true); }).catch(function(){});
+}
+function genDailyCode(){
+  var code = String(Math.floor(1000+Math.random()*9000));
+  db.ref('clinics/main/days/'+TODAY).update({ code:code, codeOn:true });
+}
+
+/* ── render ── */
+function render(){
+  var cur=inside(), w=waiting();
+  var html='';
+
+  /* bar */
+  html += '<header class="bar"><div class="bar-in">'
+    +'<span class="logo"><img src="/logo.svg" alt="" style="height:28px;width:28px;vertical-align:middle;margin-inline-end:10px;border-radius:22%">دورك</span>'
+    +'<span class="bar-title">'+esc(state.clinic.name)+'</span>'
+    +'<button class="btn btn-ghost btn-sm" id="btn-logout">خروج</button>'
+    +'</div></header>';
+
+  html += '<main class="page"><div class="grid"><div class="col">';
+
+  /* serving */
+  if(cur){
+    var el=Math.max(0,Math.round((Date.now()-cur.startedAt)/MIN));
+    var pct=Math.min(100,Math.round(el/state.clinic.avg*100));
+    html += '<div class="serving">'
+      +'<div class="sv-no"><span class="lbl">جوّه الكشف</span><b>'+cur.no+'</b></div>'
+      +'<div class="sv-info"><h2>'+esc(cur.name)+'</h2>'
+      +'<p class="meta">'+esc(metaLine(cur))+'</p>'
+      +(cur.why?'<p class="meta" style="margin-top:2px">'+esc(cur.why)+'</p>':'')
+      +(cur.chronic?'<p style="margin-top:4px"><span class="flag">مزمن/حساسية: '+esc(cur.chronic)+'</span></p>':'')
+      +'<div class="meter" aria-hidden="true"><i style="width:'+pct+'%"></i></div>'
+      +'<p class="muted small" style="margin-top:4px">بقاله '+el+' دقيقة من متوسط '+state.clinic.avg+'</p>'
+      +'</div>'
+      +'<div class="sv-act">'
+      +'<button class="btn btn-primary btn-block" id="btn-next">'+(w[0]?'تم الكشف · نادِ التالي':'تم الكشف')+'</button>'
+      +(w[0]?'<p class="muted small" style="text-align:center">التالي: '+w[0].no+' · '+esc(w[0].name)+'</p>':'')
+      +'</div></div>';
+  } else {
+    html += '<div class="serving">'
+      +'<div class="sv-no"><span class="lbl">جوّه الكشف</span><b>—</b></div>'
+      +'<div class="sv-info sv-empty"><h2 style="font-size:18px">مفيش حد جوّه دلوقتي</h2>'
+      +'<p class="muted">'+(w[0]?'التالي: '+w[0].no+' · '+esc(w[0].name):'مفيش منتظرين.')+'</p>'
+      +'</div>'
+      +'<div class="sv-act">'+(w[0]?'<button class="btn btn-primary btn-block" id="btn-next">نادِ التالي</button>':'')+'</div>'
+      +'</div>';
+  }
+
+  /* stats */
+  var total=ticketArr().length, done=ticketArr().filter(function(t){return t.status==='done'}).length;
+  var out=ticketArr().filter(function(t){return t.status==='noshow'||t.status==='cancelled'}).length;
+  var lastETA = w.length ? fmtTime(Date.now()+waitFor(w[w.length-1])*MIN) : '—';
+  html += '<div class="stats">';
+  [[total,'حجوزات اليوم'],[done,'تم كشفهم'],[w.length,'منتظرين'],[out,'غياب وإلغاء'],[lastETA,'آخر دور تقريبًا']].forEach(function(s){
+    html += '<div class="stat"><b>'+esc(s[0])+'</b><span>'+s[1]+'</span></div>';
+  });
+  html += '</div>';
+
+  /* queue list */
+  html += '<section class="card" style="padding-bottom:6px">';
+  html += '<div class="qtop"><h2 style="margin-bottom:0">طابور اليوم</h2>'
+    +'<button class="btn btn-primary btn-sm" id="btn-toggle-add" aria-expanded="'+(state.addOpen)+'" aria-controls="add-form">+ إضافة مريض</button>'
+    +'</div>';
+
+  if(state.addOpen){
+    html += '<form id="add-form" class="addbox" novalidate>'
+      +'<h3>إضافة مريض للطابور</h3>'
+      +'<div class="add-grid">'
+      +'<div class="span2"><label for="a-name">الاسم</label>'
+      +'<input id="a-name" type="text" autocomplete="off">'
+      +'<p class="err" id="ae-name" role="alert"></p></div>'
+      +'<div><label for="a-phone">الموبايل</label>'
+      +'<input id="a-phone" type="tel" inputmode="numeric" dir="ltr" maxlength="14" autocomplete="off">'
+      +'<p class="err" id="ae-phone" role="alert"></p></div>'
+      +'<div><label for="a-age">السن</label>'
+      +'<input id="a-age" type="number" inputmode="numeric" min="0" max="120" dir="ltr">'
+      +'<p class="err" id="ae-age" role="alert"></p></div>'
+      +'<fieldset><legend>النوع</legend>'
+      +'<div class="seg"><label><input type="radio" name="agender" value="ذكر"><span>ذكر</span></label>'
+      +'<label><input type="radio" name="agender" value="أنثى"><span>أنثى</span></label></div></fieldset>'
+      +'<fieldset><legend>نوع الزيارة</legend><div class="seg">'
+      +'<label><input type="radio" name="atype" value="كشف جديد" checked><span>كشف جديد</span></label>'
+      +'<label><input type="radio" name="atype" value="إعادة"><span>إعادة</span></label>'
+      +'<label><input type="radio" name="atype" value="استشارة"><span>استشارة</span></label>'
+      +'</div></fieldset>'
+      +'<div class="span2"><label for="a-why">سبب الزيارة <span class="opt">(اختياري)</span></label>'
+      +'<input id="a-why" type="text" autocomplete="off"></div>'
+      +'<div class="span2"><label for="a-chronic">أمراض مزمنة أو حساسية <span class="opt">(لو فيه)</span></label>'
+      +'<input id="a-chronic" type="text" autocomplete="off"></div>'
+      +'</div>'
+      +'<div class="row-acts"><button class="btn btn-primary" type="submit">إضافة للطابور</button>'
+      +'<button class="btn btn-ghost" type="button" id="btn-add-cancel">إغلاق</button></div>'
+      +'</form>';
+  }
+
+  html += '<div class="filters">';
+  FILTERS.forEach(function(f){
+    var n=ticketArr().filter(function(t){return matches(t,f[0])}).length;
+    html += '<button class="fchip" data-filter="'+f[0]+'" aria-pressed="'+(state.filter===f[0])+'">'+f[1]+' ('+n+')</button>';
+  });
+  html += '</div>';
+
+  var rows=ticketArr().filter(function(t){return matches(t,state.filter)})
+    .sort(function(a,b){return RANK[a.status]-RANK[b.status]||a.no-b.no});
+
+  if(!rows.length){ html += '<p class="empty">مفيش حجوزات في الفلتر ده.</p>'; }
+  else rows.forEach(function(t){
+    var acts='';
+    if(t.status==='waiting')
+      acts='<button class="btn btn-ghost btn-sm" data-act="call" data-key="'+t._key+'"'+(cur?' disabled title="أنهِ الكشف الحالي أولًا"':'')+'>استدعاء</button>'
+          +'<button class="btn btn-bad btn-sm" data-act="noshow" data-key="'+t._key+'">لم يحضر</button>'
+          +(waLink(t)?'<a class="btn btn-ghost btn-sm wa-btn'+(t.waAt?' wa-sent':'')+'" data-wa="'+t._key+'" target="_blank" rel="noopener" href="'+esc(waLink(t))+'"'+(t.waAt?' title="اتبعت الساعة '+esc(fmtTime(t.waAt))+'"':'')+'>واتساب '+(t.waAt?'<span class="wa-ok" aria-label="تم الإرسال">✓</span>':'💬')+'</a>':'');
+    else if(t.status==='in')
+      acts='<button class="btn btn-primary btn-sm" data-act="finish" data-key="'+t._key+'">تم الكشف</button>'
+          +'<button class="btn btn-ghost btn-sm" data-act="requeue" data-key="'+t._key+'">↩ رجوع للانتظار</button>';
+    else
+      acts='<button class="btn btn-ghost btn-sm" data-act="requeue" data-key="'+t._key+'">↩ رجوع للدور</button>';
+
+    html += '<article class="row '+t.status+'">'
+      +'<div class="rno">'+t.no+'</div>'
+      +'<div class="who"><div class="who-top"><strong>'+esc(t.name)+'</strong>'
+      +'<span class="meta">'+esc(metaLine(t))+'</span></div>'
+      +(t.why?'<p class="meta">'+esc(t.why)+'</p>':'')
+      +'<div class="facts">'
+      +(t.chronic?'<span class="flag">مزمن/حساسية: '+esc(t.chronic)+'</span>':'')
+      +(t.phone?'<span class="ltr">'+esc(fmtPhone(t.phone))+'</span>':'')
+      +'<span>'+(t.src==='staff'?'اتضاف ':'حجز ')+esc(fmtTime(t.createdAt))+'</span>'
+      +(t.status==='done'&&t.startedAt&&t.doneAt
+          ?'<span>جوّه من '+esc(fmtTime(t.startedAt))+' لـ '+esc(fmtTime(t.doneAt))+' ('+Math.max(1,Math.round((t.doneAt-t.startedAt)/MIN))+' د)</span>'
+          :'')
+      +(t.src==='staff'?'<span class="tag-staff">يدوي</span>':'')
+      +'</div></div>'
+      +'<div class="row-side"><span class="pill '+t.status+'">'+STATUS[t.status]+'</span>'
+      +'<div class="acts">'+acts+'</div></div>'
+      +'</article>';
+  });
+
+  html += '</section></div>'; /* end .col .o-main */
+
+  /* sidebar */
+  html += '<div class="col">';
+
+  /* QR + daily code card */
+  var code = state.dailyCode;
+  html += '<section class="card"><h2>كود الحجز</h2>'
+    +'<div class="qr-box" id="qr-container"><p class="muted small">جاري التحميل…</p></div>'
+    +'<p class="qr-url ltr">'+esc(CLIENT_URL)+'</p>'
+    +'<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px;text-align:center">'
+    +'<span class="muted small" style="letter-spacing:1px">كود اليوم</span>'
+    +'<div style="font-family:var(--f-d);font-weight:700;font-size:38px;letter-spacing:4px;color:var(--brand-ink);margin:4px 0 10px">'+(code?esc(code):'—')+'</div>'
+    +'<button class="btn btn-ghost btn-block" id="btn-new-code">توليد كود جديد لليوم</button>'
+    +'</div>'
+    +'<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">'
+    +'<button class="btn btn-primary btn-block" id="btn-open-display">📺 شاشة العرض</button>'
+    +'</div>'
+    +'</section>';
+
+  /* settings card */
+  var locked = state.clinic.setupDone && !state.editUnlocked;
+  html += '<section class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0">'
+    +'<h2 style="margin-bottom:0">إعدادات العيادة</h2>'
+    +(locked?'<button class="btn btn-ghost btn-sm" id="btn-unlock-settings">🔒</button>':'')
+    +'</div>';
+
+  if(locked){
+    /* مقفولة خالص: زرار التعديل بس، من غير ما نعرض أي قيمة */
+  } else {
+    html += '<div class="setting col"><h3>اسم العيادة</h3>'
+      +'<input id="s-name" type="text" value="'+esc(state.clinic.name)+'" autocomplete="off">'
+      +'</div>';
+    html += '<div class="setting col"><h3>التخصص <span class="opt small">(اختياري)</span></h3>'
+      +'<input id="s-spec" type="text" value="'+esc(state.clinic.specialty)+'" >'
+      +'</div>';
+    html += '<div class="setting col"><h3>العنوان <span class="opt small">(اختياري)</span></h3>'
+      +'<input id="s-address" type="text" value="'+esc(state.clinic.address)+'" >'
+      +'</div>';
+    html += '<div class="setting col"><h3>مواعيد العمل <span class="opt small">(اختياري)</span></h3>'
+      +'<input id="s-hours" type="text" value="'+esc(state.clinic.hours)+'" >'
+      +'</div>';
+    html += '<div class="setting col"><h3>رقم الاستقبال <span class="opt small">(بيظهر لما الحجز يتوقف)</span></h3>'
+      +'<input id="s-phone" type="tel" inputmode="numeric" dir="ltr" value="'+esc(state.clinic.phone)+'"">'
+      +'</div>';
+    html += '<div class="setting">'
+      +'<div><h3>متوسط مدة الكشف</h3><p class="muted small">بنحسب بيه وقت الانتظار.</p></div>'
+      +'<div class="stepper">'
+      +'<button type="button" id="avg-inc" aria-label="زوّد">+</button>'
+      +'<output id="avg-out">'+state.clinic.avg+' دقيقة</output>'
+      +'<button type="button" id="avg-dec" aria-label="قلّل">−</button>'
+      +'</div></div>';
+  }
+
+  /* open/close stays editable دايمًا — ده تشغيل يومي مش إعداد أساسي */
+  html += '<div class="setting">'
+    +'<div><h3>استقبال الحجز</h3>'
+    +'<p class="muted small" id="open-label">'+(state.clinic.open?'مفتوح':'متوقف')+'</p></div>'
+    +'<button class="switch" role="switch" id="sw-open" aria-checked="'+state.clinic.open+'" aria-label="استقبال الحجز"></button>'
+    +'</div>';
+  if(!locked){
+    html += '<div style="padding-top:12px;border-top:1px solid var(--line)">'
+      +'<button class="btn btn-primary btn-block" id="btn-save-settings">حفظ الإعدادات</button>'
+      +'</div>';
+  }
+  html += '</section>';
+
+  html += '</div></div></main>'; /* .col .grid .page */
+
+  APP.innerHTML = html;
+  bindOwner();
+  drawQR();
+}
+
+function bindOwner(){
+  var btnNext = document.getElementById('btn-next');
+  if(btnNext) btnNext.onclick = callNext;
+
+  var btnLogout = document.getElementById('btn-logout');
+  if(btnLogout) btnLogout.onclick = function(){ auth.signOut(); };
+
+  var btnToggleAdd = document.getElementById('btn-toggle-add');
+  if(btnToggleAdd) btnToggleAdd.onclick = function(){
+    state.addOpen=!state.addOpen; render();
+    if(state.addOpen) setTimeout(function(){ var el=document.getElementById('a-name'); if(el) el.focus(); },0);
+  };
+  var btnAddCancel = document.getElementById('btn-add-cancel');
+  if(btnAddCancel) btnAddCancel.onclick = function(){ state.addOpen=false; render(); };
+
+  /* filter chips */
+  document.querySelectorAll('[data-filter]').forEach(function(b){
+    b.onclick = function(){ state.filter=b.dataset.filter; render(); };
+  });
+
+  /* واتساب: أول ما الستاف يدوس نحط علامة ✓ (محفوظة عند الستاف في Firebase، فتفضل بعد التحديث) */
+  document.querySelectorAll('[data-wa]').forEach(function(a){
+    a.addEventListener('click', function(){
+      var key=a.dataset.wa, now=Date.now();
+      db.ref('clinics/main/days/'+TODAY+'/private/'+key+'/waAt').set(now);
+      if(state.priv[key]) state.priv[key].waAt=now;
+      rebuildTickets();
+      setTimeout(render,150);   /* بعد ما المتصفح يفتح واتساب، عشان الـre-render ما يلغيش الفتح */
+    });
+  });
+
+  /* row actions */
+  document.querySelectorAll('[data-act]').forEach(function(b){
+    b.onclick = function(){
+      if(b.disabled) return;
+      var key=b.dataset.key, a=b.dataset.act;
+      var now=Date.now();
+      if(a==='call'){
+        setStatus(key,'in',{startedAt:now});
+        if(state.tickets[key]) Object.assign(state.tickets[key],{status:'in',startedAt:now});
+      }
+      if(a==='finish'){
+        setStatus(key,'done',{doneAt:now});
+        if(state.tickets[key]) Object.assign(state.tickets[key],{status:'done',doneAt:now});
+      }
+      if(a==='noshow'){
+        setStatus(key,'noshow');
+        if(state.tickets[key]) state.tickets[key].status='noshow';
+      }
+      if(a==='requeue'){
+        setStatus(key,'waiting',{startedAt:null,doneAt:null});
+        if(state.tickets[key]) Object.assign(state.tickets[key],{status:'waiting',startedAt:null,doneAt:null});
+      }
+      render();
+    };
+  });
+
+  /* settings */
+  var avgInc=document.getElementById('avg-inc');
+  var avgDec=document.getElementById('avg-dec');
+  if(avgInc) avgInc.onclick=function(){ state.clinic.avg=Math.min(60,state.clinic.avg+1); document.getElementById('avg-out').textContent=state.clinic.avg+' دقيقة'; };
+  if(avgDec) avgDec.onclick=function(){ state.clinic.avg=Math.max(3,state.clinic.avg-1);  document.getElementById('avg-out').textContent=state.clinic.avg+' دقيقة'; };
+
+  /* open/close is operational — saves to Firebase instantly, no lock, no "save" button needed */
+  var swOpen=document.getElementById('sw-open');
+  if(swOpen) swOpen.onclick=function(){
+    var oldVal=state.clinic.open;
+    var newVal=!oldVal;
+    state.clinic.open=newVal;
+    swOpen.setAttribute('aria-checked',String(newVal));
+    var lbl=document.getElementById('open-label');
+    if(lbl) lbl.textContent=newVal?'مفتوح':'متوقف';
+    db.ref('clinics/main/settings/open').set(newVal).catch(function(){
+      state.clinic.open=oldVal; /* rollback */
+      toast('خطأ في تغيير الحالة');
+      render();
+    });
+  };
+
+  var btnSave=document.getElementById('btn-save-settings');
+  if(btnSave) btnSave.onclick=function(){
+    state.clinic.name      = document.getElementById('s-name').value.trim()  || state.clinic.name;
+    state.clinic.specialty = document.getElementById('s-spec').value.trim();
+    state.clinic.address   = document.getElementById('s-address').value.trim();
+    state.clinic.hours     = document.getElementById('s-hours').value.trim();
+    state.clinic.phone     = toLatin(document.getElementById('s-phone').value).replace(/[\s-]/g,'');
+
+    /* optimistic: نقفل ونعرض التحديث فورًا من غير ما نستنى رد السيرفر،
+       والحفظ الفعلي بيحصل في الخلفية. لو فشل، نرجّع الفورم تاني ونوضّح السبب. */
+    var savedClinic = JSON.parse(JSON.stringify(state.clinic));
+    state.clinic.setupDone = true;
+    state.editUnlocked = false;
+    render();
+    toast('تم حفظ الإعدادات');
+
+    saveSettings().catch(function(err){
+      state.clinic = savedClinic;
+      state.editUnlocked = true;
+      render();
+      toast('حصل خطأ: '+(err&&err.message?err.message:'متقدرش نحفظ، جرّب تاني'));
+    });
+  };
+
+  var btnUnlock=document.getElementById('btn-unlock-settings');
+  if(btnUnlock) btnUnlock.onclick=function(){
+    if(confirm('متأكد إنك عايز تعدّل إعدادات العيادة الأساسية؟')){ state.editUnlocked=true; render(); }
+  };
+
+  var btnNewCode=document.getElementById('btn-new-code');
+  if(btnNewCode) btnNewCode.onclick=function(){ genDailyCode(); };
+
+  var btnDisplay=document.getElementById('btn-open-display');
+  if(btnDisplay) btnDisplay.onclick=function(){ window.open('../display/', '_blank'); };
+
+  /* add form */
+  var addForm=document.getElementById('add-form');
+  if(addForm) addForm.addEventListener('submit', submitAdd);
+}
+
+function submitAdd(e){
+  e.preventDefault();
+  var form=e.currentTarget;
+  var name  =document.getElementById('a-name').value.trim().replace(/\s+/g,' ');
+  var phone =toLatin(document.getElementById('a-phone').value||'').replace(/[\s-]/g,'');
+  var ageRaw=toLatin(document.getElementById('a-age').value||'').trim();
+  var age   =ageRaw===''?null:parseInt(ageRaw,10);
+  var g     =form.querySelector('input[name=agender]:checked');
+  var type  =form.querySelector('input[name=atype]:checked').value;
+  var errs={};
+  if(name.length<2) errs.name='اكتب اسم المريض.';
+  if(!/^01[0125]\d{8}$/.test(phone)) errs.phone=phone?'رقم الموبايل مش صح.':'اكتب رقم الموبايل.';
+  else {
+    var dup=ticketArr().find(function(t){return t.phone===phone&&(t.status==='waiting'||t.status==='in')});
+    if(dup) errs.phone='الرقم عنده حجز شغال برقم '+dup.no+'.';
+  }
+  if(age===null||isNaN(age)) errs.age='اكتب السن.';
+  else if(!(age>=0&&age<=120)) errs.age='السن لازم يكون بين 0 و120.';
+  ['name','phone','age'].forEach(function(k){var el=document.getElementById('ae-'+k);if(el)el.textContent=errs[k]||'';});
+  if(Object.keys(errs).length){ document.getElementById('a-'+Object.keys(errs)[0]).focus(); return; }
+  if(!g){ toast('اختار النوع (ذكر / أنثى)'); return; }
+
+  var submitBtn = form.querySelector('button[type=submit]');
+  if(submitBtn) submitBtn.disabled = true;
+
+  /* نفس عدّاد Firebase الذري اللي بيستخدمه العميل، عشان رقمين ما يتكرروش
+     لو حجز من الـQR وإضافة يدوية حصلوا في نفس اللحظة */
+  db.ref('clinics/main/days/'+TODAY+'/counter').transaction(function(cur){
+    return (cur||0) + 1;
+  }).then(function(result){
+    var no = result.snapshot.val();
+    var base='clinics/main/days/'+TODAY;
+    var id=db.ref(base+'/queue').push().key;
+    var up={};
+    up['private/'+id]={
+      name:name, phone:phone||'', age:age, gender:g?g.value:'',
+      type:type, why:document.getElementById('a-why').value.trim(),
+      chronic:document.getElementById('a-chronic').value.trim(), src:'staff'
+    };
+    up['queue/'+id]={ no:no, first:name.split(' ')[0].slice(0,30), status:'waiting', createdAt:Date.now() };
+    db.ref(base).update(up);
+    form.reset(); toast('اتضاف '+name+' برقم '+no);
+    if(submitBtn) submitBtn.disabled = false;
+  }).catch(function(){
+    if(submitBtn) submitBtn.disabled = false;
+    toast('حصل خطأ، جرّب تاني');
+  });
+}
+
+function drawQR(){
+  var box=document.getElementById('qr-container'); if(!box) return;
+  try{
+    box.innerHTML='';
+    new QRCode(box,{text:CLIENT_URL,width:172,height:172,colorDark:'#10282A',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  }catch(err){ box.innerHTML='<p class="muted small">تعذّر رسم الكود</p>'; }
+}
+
+/* ── auth ── */
+function showLogin(){
+  APP.innerHTML = '<div class="login-wrap"><div class="login-box">'
+    +'<div style="text-align:center;font-family:var(--f-d);font-weight:700;font-size:36px;color:var(--brand-ink);margin-bottom:8px">دورك</div>'
+    +'<h1>لوحة العيادة</h1>'
+    +'<p>سجّل دخولك بالإيميل والباسورد اللي حددتهم في Firebase.</p>'
+    +'<div><label for="l-email">الإيميل</label>'
+    +'<input id="l-email" type="email" inputmode="email" dir="ltr" autocomplete="email"></div>'
+    +'<div><label for="l-pass">الباسورد</label>'
+    +'<input id="l-pass" type="password" dir="ltr" autocomplete="current-password"></div>'
+    +'<p class="err" id="l-err" role="alert"></p>'
+    +'<button class="btn btn-primary btn-block" id="btn-login">دخول</button>'
+    +'</div></div>';
+  document.getElementById('btn-login').onclick = function(){
+    var email=document.getElementById('l-email').value.trim();
+    var pass =document.getElementById('l-pass').value;
+    document.getElementById('l-err').textContent='';
+    auth.signInWithEmailAndPassword(email,pass).catch(function(err){
+      document.getElementById('l-err').textContent='الإيميل أو الباسورد مش صح.';
+    });
+  };
+  document.getElementById('l-pass').addEventListener('keydown',function(e){
+    if(e.key==='Enter') document.getElementById('btn-login').click();
+  });
+}
+
+function startListeners(){
+  db.ref('clinics/main/settings').on('value',function(snap){
+    var v=snap.val()||{};
+    state.clinic.name      = v.name      || 'العيادة';
+    state.clinic.specialty = v.specialty || '';
+    state.clinic.address   = v.address   || '';
+    state.clinic.hours     = v.hours     || '';
+    state.clinic.phone     = v.phone     || '';
+    state.clinic.avg       = v.avg       || 15;
+    state.clinic.open      = v.open !== false;
+    state.clinic.setupDone = !!v.setupDone;
+    render();
+  });
+  db.ref('clinics/main/days/'+TODAY+'/queue').on('value',function(snap){
+    state.queue = snap.val() || {};
+    rebuildTickets(); render();
+  });
+  db.ref('clinics/main/days/'+TODAY+'/private').on('value',function(snap){
+    state.priv = snap.val() || {};
+    rebuildTickets(); render();
+  });
+  db.ref('clinics/main/days/'+TODAY+'/code').on('value',function(snap){
+    state.dailyCode = snap.val() || null;
+    if(!snap.exists()) ensureDailyCode();
+    render();
+  });
+}
+
+/* مهم: أي أوضة دخول كانت متفتكرة من قبل التحديث ده لازم تتمسح，
+   عشان كل فتح جديد للوحة يطلب الإيميل والباسورد من غير استثناء */
+auth.setPersistence(firebase.auth.Auth.Persistence.NONE).then(function(){
+  return auth.signOut();
+}).then(function(){
+  auth.onAuthStateChanged(function(user){
+    if(user){ startListeners(); }
+    else     { showLogin();     }
+  });
+});
+</script>
+<div id="app-version" dir="ltr" style="text-align:center;font:11px/1.2 system-ui,sans-serif;color:#8a9a98;padding:6px 0 8px;opacity:.8">v27</div>
+</body>
+</html>
